@@ -10,7 +10,7 @@ void setup() {
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.println("WiFi Failed");
+        Serial.println(F("WiFi Failed"));
         while(1) {
             delay(1000);
         }
