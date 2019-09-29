@@ -12,43 +12,44 @@ char* GreePacker::b64_encode(const char* data, size_t length) {
 
 char* GreePacker::b64_decode(const char* data) {  
 	size_t size = base64_decode_expected_len(strlen(data));
-	char* buffer = (char*) malloc(size);
-	base64_decodestate _state;
-	base64_init_decodestate(&_state);
-	int len = base64_decode_block(data, strlen(data), buffer, &_state);   
-	return buffer;
+
+	char* buf = (char*)malloc(size);
+	base64_decode_chars(data, strlen(data), buf);
+	return buf;
 }
 
 char* GreePacker::pack(const char* key, const char* data) {
-	size_t size = strlen(data);
+	size_t size = strlen(data) + 1;
 	char pkcs7_padding_length = 16 - (size % 16);
 	size += pkcs7_padding_length;
 
 	char* buf = (char*)malloc(size);
 	memset(buf + strlen(data), pkcs7_padding_length, pkcs7_padding_length);
 	memcpy(buf, data, strlen(data));
-	
+
 	struct AES_ctx ctx;
 	AES_init_ctx(&ctx, (uint8_t*)key);
 	for(int i = 0; i<size; i+=16) {
-	  AES_ECB_encrypt(&ctx, (uint8_t*)buf + i);
+		AES_ECB_encrypt(&ctx, (uint8_t*)buf + i);
 	}
 
 	char* packed = b64_encode(buf, size);
 	free(buf);
-	
+
 	return packed;
 }
 
 char* GreePacker::unpack(const char* key, const char* data) {
 	char* buf = b64_decode(data);
-	size_t size = base64_decode_expected_len(strlen(data)) -1;
+	size_t size = base64_decode_expected_len(strlen(data));
+	size -= size % 16;
+
 	struct AES_ctx ctx;
 	AES_init_ctx(&ctx, (uint8_t*)key);
 	for(int i = 0; i<size; i+=16) {
-	  AES_ECB_decrypt(&ctx, (uint8_t*)buf + i);
+		AES_ECB_decrypt(&ctx, (uint8_t*)buf + i);
 	}
 	buf[size - buf[size-1]] = 0; // pkcs7 unpad: 0 terminate the string
-	
+
 	return buf;
 }

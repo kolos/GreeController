@@ -21,5 +21,7 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
+  delay(5000);
+  devices.getStatus(GREE_MAC);
+  delay(60 * 5000);
 }

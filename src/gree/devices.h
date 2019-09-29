@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <ESPAsyncUDP.h>
 #include <ArduinoJson.h>
 #include <vector>
@@ -13,16 +14,18 @@
 
 class Devices
 {
-  private:
-    AsyncUDP udp;
-    std::vector<Device> devices;
-	const char* base_key = BASE_KEY;
-    
-    void handleHandshakePacket(IPAddress remoteIP, const JsonObject& root);
-    void packetHandler(AsyncUDPPacket packet);
-    void addDevice(const char* mac, const char* key, IPAddress remoteIP);
-    void sendBindingRequest(IPAddress remoteIP, const char* mac);
-  public:
-    void listen();
-    void scan();
+	private:
+		AsyncUDP udp;
+		std::vector<Device*> devices;
+		const char* base_key = BASE_KEY;
+		void handleStatusPacket(const JsonObject& root);
+		void handleHandshakePacket(IPAddress remoteIP, const JsonObject& root);
+		void packetHandler(AsyncUDPPacket packet);
+		void addDevice(const char* mac, const char* key, IPAddress remoteIP);
+		void sendBindingRequest(IPAddress remoteIP, const char* mac);
+		Device* findDeviceByMac(const char* mac);
+	public:
+		void listen();
+		void scan();
+		void getStatus(const char* mac);
 };

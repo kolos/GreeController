@@ -3,10 +3,11 @@
 
 class Device 
 {
-  private:
-    const char* mac;
-    const char* key;
-    IPAddress ip;
-  public:
-    Device(const char* mac, const char* key, IPAddress ip);
+	public:
+		char* mac;
+		char* key;
+		IPAddress ip;
+
+		Device(const char* mac, const char* key, IPAddress ip);
+		~Device();
 };
