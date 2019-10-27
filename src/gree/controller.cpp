@@ -1,6 +1,6 @@
-#include "devices.h"
+#include "controller.h"
 
-void Devices::handleStatusPacket(const JsonObject& root) {
+void GreeController::handleStatusPacket(const JsonObject& root) {
 	Device* device = findDeviceByMac(root["cid"].as<char*>());
 	if(device == nullptr) return;
 
@@ -17,7 +17,7 @@ void Devices::handleStatusPacket(const JsonObject& root) {
 	free(unpacked);
 }
 
-void Devices::handleHandshakePacket(IPAddress remoteIP, const JsonObject& root) {
+void GreeController::handleHandshakePacket(IPAddress remoteIP, const JsonObject& root) {
 	char* unpacked = GreePacker::unpack(base_key, root["pack"].as<char*>());
 
 	DynamicJsonBuffer jsonBuffer(strlen(unpacked));
@@ -35,7 +35,7 @@ void Devices::handleHandshakePacket(IPAddress remoteIP, const JsonObject& root) 
 	free(unpacked);
 }
 
-void Devices::packetHandler(AsyncUDPPacket packet) {
+void GreeController::packetHandler(AsyncUDPPacket packet) {
 	if(packet.remotePort() != GREE_PORT) return;
 
 	DynamicJsonBuffer jsonBuffer(packet.length());
@@ -53,11 +53,11 @@ void Devices::packetHandler(AsyncUDPPacket packet) {
 	}
 }
 
-void Devices::addDevice(const char* mac, const char* key, IPAddress remoteIP) {
+void GreeController::addDevice(const char* mac, const char* key, IPAddress remoteIP) {
 	devices.push_back(new Device(mac, key, remoteIP));
 }
 
-void Devices::sendBindingRequest(IPAddress remoteIP, const char* mac) {
+void GreeController::sendBindingRequest(IPAddress remoteIP, const char* mac) {
 
 	char binding_json[strlen_P(BINDING_STR) - 2 /* for %s */ + strlen(mac) + 1 /* for 0 terminal */];
 		snprintf_P(
@@ -80,7 +80,7 @@ void Devices::sendBindingRequest(IPAddress remoteIP, const char* mac) {
 	free(packed);
 }
 
-void Devices::listen() {
+void GreeController::listen() {
 	if(udp.listen(0)) {
 		udp.onPacket([this](AsyncUDPPacket packet){
 			packetHandler(packet);
@@ -88,13 +88,13 @@ void Devices::listen() {
 	}
 }
 
-void Devices::scan() {
+void GreeController::scan() {
 	char scanning[13];
 	sprintf_P(scanning, SCANNING_STR);
 	udp.broadcastTo(scanning, GREE_PORT);
 }
 
-void Devices::getStatus(const char* mac) {
+void GreeController::getStatus(const char* mac) {
 	Device* device = findDeviceByMac(mac);
 	if(device == nullptr) return;
 
@@ -119,7 +119,7 @@ void Devices::getStatus(const char* mac) {
 	free(packed);
 }
 
-Device* Devices::findDeviceByMac(const char* mac) {
+Device* GreeController::findDeviceByMac(const char* mac) {
 	for(Device* device: devices) {
 		if(strncmp(mac, device->mac, strlen(mac)) == 0) {
 			return device;
@@ -129,7 +129,7 @@ Device* Devices::findDeviceByMac(const char* mac) {
 	return nullptr;
 }
 
-void Devices::getThis(const char* input, const char* mac) {
+void GreeController::getThis(const char* input, const char* mac) {
 	Device* device = findDeviceByMac(mac);
 	if(device == nullptr) return;
 	

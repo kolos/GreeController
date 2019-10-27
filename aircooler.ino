@@ -1,9 +1,9 @@
 #include <ESP8266WiFi.h>
-#include "src/gree/devices.h"
+#include "src/gree/controller.h"
 
 #include "constants.h"
 
-Devices devices;
+GreeController greeController;
 void setup() {
     Serial.begin(SERIAL_BAUD_RATE);
 
@@ -16,8 +16,8 @@ void setup() {
         }
     }
 
-    devices.listen();
-    devices.scan();
+    greeController.listen();
+    greeController.scan();
 }
 
 String a;
@@ -26,11 +26,11 @@ void loop() {
     a = Serial.readStringUntil('\n');
 
     const char* thing = a.c_str();
-    devices.getThis(thing, GREE_MAC);
+    greeController.getThis(thing, GREE_MAC);
   }
   /*
   delay(5000);
-  devices.getStatus(GREE_MAC);
+  greeController.getStatus(GREE_MAC);
   delay(60 * 5000);
   */
 }
