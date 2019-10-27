@@ -20,8 +20,17 @@ void setup() {
     devices.scan();
 }
 
+String a;
 void loop() {
+  while(Serial.available()) {
+    a = Serial.readStringUntil('\n');
+
+    const char* thing = a.c_str();
+    devices.getThis(thing, GREE_MAC);
+  }
+  /*
   delay(5000);
   devices.getStatus(GREE_MAC);
   delay(60 * 5000);
+  */
 }

@@ -28,4 +28,5 @@ class Devices
 		void listen();
 		void scan();
 		void getStatus(const char* mac);
+		void getThis(const char* input, const char* mac);
 };

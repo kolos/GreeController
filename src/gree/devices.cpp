@@ -11,6 +11,8 @@ void Devices::handleStatusPacket(const JsonObject& root) {
 	if(!unpacked_json.success()) return;
 
 	unpacked_json.printTo(Serial);
+	
+	Serial.println("");
 
 	free(unpacked);
 }
@@ -126,3 +128,30 @@ Device* Devices::findDeviceByMac(const char* mac) {
 
 	return nullptr;
 }
+
+void Devices::getThis(const char* input, const char* mac) {
+	Device* device = findDeviceByMac(mac);
+	if(device == nullptr) return;
+	
+	char status_json[strlen_P(ONE_STATUS_STR) - 2 -2 + strlen(input) + strlen(device->mac) + 1];
+	snprintf_P(
+		status_json, sizeof(status_json),
+		ONE_STATUS_STR,
+		input,
+		device->mac
+	);
+
+	char* packed = GreePacker::pack(device->key, status_json);
+
+	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + strlen(device->mac) + strlen(packed) + 1];
+	snprintf_P(status_request, sizeof(status_request),
+		STATUS_REQUEST_STR,
+		packed,
+		device->mac
+	);
+
+	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
+
+	free(packed);
+}
+
