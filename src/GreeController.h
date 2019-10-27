@@ -1,16 +1,21 @@
+#ifndef GREECONTROLLER_H
+#define GREECONTROLLER_H
+
 #include <Arduino.h>
 #include <ESPAsyncUDP.h>
 #include <ArduinoJson.h>
 #include <vector>
 #include <pgmspace.h>
 
-#include "device.h"
-#include "greepacker.h"
+#include "GreeDevice.h"
+#include "GreePacker.h"
 
-#include "templates.h"
+#include "GreeTemplates.h"
 
 #define GREE_PORT 7000
 #define BASE_KEY "a3K8Bx%2r8Y7#xDh"
+
+namespace GreeControllerLib {
 
 class GreeController
 {
@@ -30,3 +35,9 @@ class GreeController
 		void getStatus(const char* mac);
 		void getThis(const char* input, const char* mac);
 };
+
+} // namespace GreeControllerLib
+
+typedef GreeControllerLib::GreeController GreeController;
+
+#endif

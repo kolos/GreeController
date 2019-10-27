@@ -1,3 +1,6 @@
+#ifndef GREEPACKER_H
+#define GREEPACKER_h
+
 #include <Arduino.h>
 
 extern "C" {
@@ -5,6 +8,8 @@ extern "C" {
 	#include "libb64/cencode.h"
 	#include "aes.h"
 }
+
+namespace GreeControllerLib {
 
 class GreePacker
 {
@@ -15,3 +20,6 @@ class GreePacker
 		static char* pack(const char* key, const char* data);
 		static char* unpack(const char* key, const char* data);
 };
+
+} // namespace GreeControllerLib
+#endif

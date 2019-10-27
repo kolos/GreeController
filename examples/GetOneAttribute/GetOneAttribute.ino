@@ -1,7 +1,12 @@
 #include <ESP8266WiFi.h>
-#include "src/gree/controller.h"
+#include <GreeController.h>
 
-#include "constants.h"
+#define SERIAL_BAUD_RATE 115200
+
+#define WIFI_SSID		""
+#define WIFI_PASSWORD		""
+
+#define GREE_MAC		"1337deadbeef"
 
 GreeController greeController;
 void setup() {

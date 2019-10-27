@@ -1,4 +1,6 @@
-#include "greepacker.h"
+#include "GreePacker.h"
+
+using namespace GreeControllerLib;
 
 char* GreePacker::b64_encode(const char* data, size_t length) {
 	size_t size = base64_encode_expected_len_nonewlines(length);

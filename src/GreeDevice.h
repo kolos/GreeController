@@ -1,5 +1,10 @@
+#ifndef GREEDEVICE_H
+#define GREEDEVICE_H
+
 #include <Arduino.h>
 #include <ESPAsyncUDP.h>
+
+namespace GreeControllerLib {
 
 class Device 
 {
@@ -11,3 +16,6 @@ class Device
 		Device(const char* mac, const char* key, IPAddress ip);
 		~Device();
 };
+
+} // namespace GreeControllerLib
+#endif

@@ -1,4 +1,6 @@
-#include "controller.h"
+#include "GreeController.h"
+
+using namespace GreeControllerLib;
 
 void GreeController::handleStatusPacket(const JsonObject& root) {
 	Device* device = findDeviceByMac(root["cid"].as<char*>());

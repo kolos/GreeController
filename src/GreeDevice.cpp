@@ -1,4 +1,6 @@
-#include "device.h"
+#include "GreeDevice.h"
+
+using namespace GreeControllerLib;
 
 Device::Device(const char* _mac, const char* _key, IPAddress _ip): ip(_ip) {
 	mac = strdup(_mac);
