@@ -2,56 +2,53 @@
 
 using namespace GreeControllerLib;
 
-void GreeController::handleStatusPacket(const JsonObject& root) {
-	Device* device = findDeviceByMac(root["cid"].as<char*>());
+void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
+	char* data = (char*)packet.data();
+	char* cid = getJsonValue(data, "cid");
+	Device* device = findDeviceByMac(cid);
 	if(device == nullptr) return;
+	free(cid);
 
-	char* unpacked = GreePacker::unpack(device->key, root["pack"].as<char*>());
+	char* packed = getJsonValue(data, "pack");
+	char* unpacked = GreePacker::unpack(device->key, packed);
+	free(packed);
 
-	DynamicJsonBuffer jsonBuffer(strlen(unpacked));
-	JsonObject& unpacked_json = jsonBuffer.parseObject(unpacked);
-	if(!unpacked_json.success()) return;
-
-	unpacked_json.printTo(Serial);
-	
-	Serial.println("");
+	Serial.println(unpacked);
 
 	free(unpacked);
 }
 
-void GreeController::handleHandshakePacket(IPAddress remoteIP, const JsonObject& root) {
-	char* unpacked = GreePacker::unpack(base_key, root["pack"].as<char*>());
+void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
+	char* data = (char*)packet.data();
+	char* packed = getJsonValue(data, "pack");
 
-	DynamicJsonBuffer jsonBuffer(strlen(unpacked));
-	JsonObject& unpacked_json = jsonBuffer.parseObject(unpacked);
-	if(!unpacked_json.success()) return;
+	char* unpacked = GreePacker::unpack(base_key, packed);
+	free(packed);
 
-	const char* topic = unpacked_json["t"];
-	if(strcmp_P(topic, PSTR("dev")) == 0) {
-		sendBindingRequest(remoteIP, unpacked_json["mac"].as<char*>());
+	char* mac = getJsonValue(unpacked, "mac");
+	if(strstr_P(unpacked, PSTR("\"t\":\"dev\""))) {
+		sendBindingRequest(packet.remoteIP(), mac);
 	}
-	else if(strcmp_P(topic, PSTR("bindok")) == 0) {
-		addDevice(unpacked_json["mac"].as<char*>(), unpacked_json["key"].as<char*>(), remoteIP);
+	else if(strstr_P(unpacked, PSTR("\"t\":\"bindok\""))) {
+		char* key = getJsonValue(unpacked, "key");
+		addDevice(mac, key, packet.remoteIP());
+		free(key);
 	}
-
+	free(mac);
 	free(unpacked);
 }
 
 void GreeController::packetHandler(AsyncUDPPacket packet) {
 	if(packet.remotePort() != GREE_PORT) return;
 
-	DynamicJsonBuffer jsonBuffer(packet.length());
-	JsonObject& root = jsonBuffer.parseObject(packet.data());
-	if(!root.success()) return;
+	const char* data = (char*)packet.data();
 
-	const char* topic = root["t"];
-	if(topic == nullptr ) return;
-	int i = root["i"];
-
-	if(i == 1 && strcmp_P(topic, PSTR("pack")) == 0) {
-		handleHandshakePacket(packet.remoteIP(), root);
-	}else if(i == 0 && strcmp_P(topic, PSTR("pack")) == 0) {
-		handleStatusPacket(root);
+	if(strstr_P(data, PSTR("\"t\":\"pack\""))) { // has packed data
+		if(strstr_P(data, PSTR("\"i\":1"))) { // initial packet
+			handleHandshakePacket(packet);
+		} else if(strstr_P(data, PSTR("\"i\":0"))) { // other packet
+			handleStatusPacket(packet);
+		}
 	}
 }
 
@@ -215,4 +212,31 @@ void GreeController::setThis(const char* options, const char* values, const char
 	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
 
 	free(packed);
+}
+
+char* GreeController::getJsonValue(const char* json, const char* tag) {
+	char* search_tag = (char*)malloc(strlen(tag) + 3 + 1);
+	snprintf(search_tag, strlen(tag) + 3 + 1, "\"%s\":", tag);
+
+	char* search_idx = strstr(json, search_tag);
+	free(search_tag);
+
+	if(search_idx == nullptr) return nullptr;
+	bool is_string = (*search_idx == '"') ? 1 : 0;
+	search_idx += strlen(tag) + 3 + is_string * 1;
+	uint16_t val_len = 0;
+	for(;*search_idx!='\0';val_len++) {
+		char c = *(search_idx+val_len);
+		if(is_string) {
+			if(c == '"' && *(search_idx+val_len-1) != '\\') break;
+		} else {
+			if(c == ',' || c == '}') break;
+		}
+	}
+
+	char* tmp = (char*)malloc(val_len+1);
+	strncpy(tmp, search_idx, val_len);
+	tmp[val_len] = '\0';
+
+	return tmp;
 }

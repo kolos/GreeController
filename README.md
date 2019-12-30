@@ -2,7 +2,6 @@
 
 ## Depends on external libs:
 * https://github.com/me-no-dev/ESPAsyncUDP
-* https://github.com/bblanchon/ArduinoJson
 * https://github.com/kokke/tiny-AES-c
 
 ## Protocol by:
