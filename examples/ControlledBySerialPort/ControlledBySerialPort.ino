@@ -42,12 +42,12 @@ void loop() {
 
       if(isNumeric(_second)) { // second word is a number
         int _val = _second.toInt();
-        greeController.setThis(_first.c_str(), (uint8_t)_val, GREE_MAC);
+        greeController.set(_first.c_str(), (uint8_t)_val, GREE_MAC);
       } else {
-        greeController.setThis(_first.c_str(), _second.c_str(), GREE_MAC);
+        greeController.set(_first.c_str(), _second.c_str(), GREE_MAC);
       }
     } else {
-      greeController.getThis(a.c_str(), GREE_MAC);
+      greeController.get(a.c_str(), GREE_MAC);
     }
   }
 }

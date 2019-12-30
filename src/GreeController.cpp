@@ -93,31 +93,6 @@ void GreeController::scan() {
 	udp.broadcastTo(scanning, GREE_PORT);
 }
 
-void GreeController::getStatus(const char* mac) {
-	Device* device = findDeviceByMac(mac);
-	if(device == nullptr) return;
-
-	char status_json[strlen_P(STATUS_STR) - 2 + strlen(device->mac) + 1];
-	snprintf_P(
-		status_json, sizeof(status_json),
-		STATUS_STR,
-		device->mac
-	);
-
-	char* packed = GreePacker::pack(device->key, status_json);
-
-	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + strlen(device->mac) + strlen(packed) + 1];
-	snprintf_P(status_request, sizeof(status_request),
-		STATUS_REQUEST_STR,
-		packed,
-		device->mac
-	);
-
-	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
-
-	free(packed);
-}
-
 Device* GreeController::findDeviceByMac(const char* mac) {
 	for(Device* device: devices) {
 		if(strncmp(mac, device->mac, strlen(mac)) == 0) {
@@ -128,7 +103,7 @@ Device* GreeController::findDeviceByMac(const char* mac) {
 	return nullptr;
 }
 
-void GreeController::getThis(const char* input, const char* mac) {
+void GreeController::get(const char* input, const char* mac) {
 	Device* device = findDeviceByMac(mac);
 	if(device == nullptr) return;
 	
@@ -160,7 +135,7 @@ uint8_t GreeController::numOfDecimals(uint8_t num){
 					: 3;
 }
 
-void GreeController::setThis(const char* option, uint8_t value, const char* mac) {
+void GreeController::set(const char* option, uint8_t value, const char* mac) {
 	Device* device = findDeviceByMac(mac);
 	if(device == nullptr) return;
 
@@ -187,7 +162,7 @@ void GreeController::setThis(const char* option, uint8_t value, const char* mac)
 	free(packed);
 }
 
-void GreeController::setThis(const char* options, const char* values, const char* mac) {
+void GreeController::set(const char* options, const char* values, const char* mac) {
 	Device* device = findDeviceByMac(mac);
 	if(device == nullptr) return;
 

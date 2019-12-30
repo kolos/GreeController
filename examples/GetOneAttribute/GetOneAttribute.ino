@@ -31,11 +31,6 @@ void loop() {
     a = Serial.readStringUntil('\n');
 
     const char* thing = a.c_str();
-    greeController.getThis(thing, GREE_MAC);
+    greeController.get(thing, GREE_MAC);
   }
-  /*
-  delay(5000);
-  greeController.getStatus(GREE_MAC);
-  delay(60 * 5000);
-  */
 }

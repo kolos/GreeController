@@ -33,10 +33,9 @@ class GreeController
 	public:
 		void listen();
 		void scan();
-		void getStatus(const char* mac);
-		void getThis(const char* input, const char* mac);
-		void setThis(const char* option, uint8_t value, const char* mac);
-		void setThis(const char* option, const char* values, const char* mac);
+		void get(const char* input, const char* mac);
+		void set(const char* option, uint8_t value, const char* mac);
+		void set(const char* option, const char* values, const char* mac);
 };
 
 } // namespace GreeControllerLib
