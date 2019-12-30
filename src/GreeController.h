@@ -29,11 +29,14 @@ class GreeController
 		void addDevice(const char* mac, const char* key, IPAddress remoteIP);
 		void sendBindingRequest(IPAddress remoteIP, const char* mac);
 		Device* findDeviceByMac(const char* mac);
+		uint8_t numOfDecimals(uint8_t num);
 	public:
 		void listen();
 		void scan();
 		void getStatus(const char* mac);
 		void getThis(const char* input, const char* mac);
+		void setThis(const char* option, uint8_t value, const char* mac);
+		void setThis(const char* option, const char* values, const char* mac);
 };
 
 } // namespace GreeControllerLib

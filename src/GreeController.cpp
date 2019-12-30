@@ -157,3 +157,62 @@ void GreeController::getThis(const char* input, const char* mac) {
 	free(packed);
 }
 
+uint8_t GreeController::numOfDecimals(uint8_t num){
+	return num < 10 ? 1
+					: num < 100 ? 2
+					: 3;
+}
+
+void GreeController::setThis(const char* option, uint8_t value, const char* mac) {
+	Device* device = findDeviceByMac(mac);
+	if(device == nullptr) return;
+
+	char status_json[strlen_P(SET_OPTION_STR) - 2 -2 + strlen(option) + numOfDecimals(value) + strlen(device->mac) + 1];
+	snprintf_P(
+		status_json, sizeof(status_json),
+		SET_OPTION_STR,
+		option,
+		value,
+		device->mac
+	);
+
+	char* packed = GreePacker::pack(device->key, status_json);
+
+	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + strlen(device->mac) + strlen(packed) + 1];
+	snprintf_P(status_request, sizeof(status_request),
+		STATUS_REQUEST_STR,
+		packed,
+		device->mac
+	);
+
+	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
+
+	free(packed);
+}
+
+void GreeController::setThis(const char* options, const char* values, const char* mac) {
+	Device* device = findDeviceByMac(mac);
+	if(device == nullptr) return;
+
+	char status_json[strlen_P(SET_OPTIONS_STR) - 2 -2 + strlen(options) + strlen(values) + strlen(device->mac) + 1];
+	snprintf_P(
+		status_json, sizeof(status_json),
+		SET_OPTIONS_STR,
+		options,
+		values,
+		device->mac
+	);
+
+	char* packed = GreePacker::pack(device->key, status_json);
+
+	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + strlen(device->mac) + strlen(packed) + 1];
+	snprintf_P(status_request, sizeof(status_request),
+		STATUS_REQUEST_STR,
+		packed,
+		device->mac
+	);
+
+	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
+
+	free(packed);
+}
