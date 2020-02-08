@@ -13,7 +13,9 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 	char* unpacked = GreePacker::unpack(device->key, packed);
 	free(packed);
 
-	Serial.println(unpacked);
+	if(cb != nullptr) {
+		cb(unpacked);
+	}
 
 	free(unpacked);
 }
@@ -214,4 +216,8 @@ char* GreeController::getJsonValue(const char* json, const char* tag) {
 	tmp[val_len] = '\0';
 
 	return tmp;
+}
+
+void GreeController::setStatusHandler(GreeMsgHandlerFunction callback) {
+	cb = callback;
 }

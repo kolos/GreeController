@@ -16,11 +16,14 @@
 
 namespace GreeControllerLib {
 
+typedef std::function<void(const char*)> GreeMsgHandlerFunction;
+
 class GreeController
 {
 	private:
 		AsyncUDP udp;
 		std::vector<Device*> devices;
+		GreeMsgHandlerFunction cb = nullptr;
 		const char* base_key = BASE_KEY;
 		void handleStatusPacket(AsyncUDPPacket packet);
 		void handleHandshakePacket(AsyncUDPPacket packet);
@@ -36,6 +39,7 @@ class GreeController
 		void get(const char* input, const char* mac);
 		void set(const char* option, uint8_t value, const char* mac);
 		void set(const char* option, const char* values, const char* mac);
+		void setStatusHandler(GreeMsgHandlerFunction cb);
 };
 
 } // namespace GreeControllerLib
