@@ -221,3 +221,12 @@ char* GreeController::getJsonValue(const char* json, const char* tag) {
 void GreeController::setStatusHandler(GreeMsgHandlerFunction callback) {
 	cb = callback;
 }
+
+void GreeController::rescan() {
+	devices.clear();
+	scan();
+}
+
+std::vector<Device*> GreeController::getDevices() {
+	return devices;
+}

@@ -36,10 +36,12 @@ class GreeController
 	public:
 		void listen();
 		void scan();
+		void rescan();
 		void get(const char* input, const char* mac);
 		void set(const char* option, uint8_t value, const char* mac);
 		void set(const char* option, const char* values, const char* mac);
 		void setStatusHandler(GreeMsgHandlerFunction cb);
+		std::vector<Device*> getDevices();
 };
 
 } // namespace GreeControllerLib
