@@ -29,15 +29,19 @@ void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
 
 	char* mac = getJsonValue(unpacked, "mac");
 	if(strstr_P(unpacked, PSTR("\"t\":\"dev\""))) {
+		free(unpacked);
 		sendBindingRequest(packet.remoteIP(), mac);
+		free(mac);
+		return;
 	}
-	else if(strstr_P(unpacked, PSTR("\"t\":\"bindok\""))) {
+
+	if(strstr_P(unpacked, PSTR("\"t\":\"bindok\""))) {
 		char* key = getJsonValue(unpacked, "key");
+		free(unpacked);
 		addDevice(mac, key, packet.remoteIP());
 		free(key);
+		free(mac);
 	}
-	free(mac);
-	free(unpacked);
 }
 
 void GreeController::packetHandler(AsyncUDPPacket packet) {
@@ -75,10 +79,9 @@ void GreeController::sendBindingRequest(IPAddress remoteIP, const char* mac) {
 		packed,
 		mac
 	);
+	free(packed);
 
 	udp.writeTo((uint8_t*)bind_request, sizeof(bind_request), remoteIP, GREE_PORT);
-
-	free(packed);
 }
 
 void GreeController::listen() {
@@ -125,10 +128,9 @@ void GreeController::get(const char* input, const char* mac) {
 		packed,
 		device->mac
 	);
+	free(packed);
 
 	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
-
-	free(packed);
 }
 
 uint8_t GreeController::numOfDecimals(uint8_t num){
@@ -158,10 +160,9 @@ void GreeController::set(const char* option, uint8_t value, const char* mac) {
 		packed,
 		device->mac
 	);
+	free(packed);
 
 	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
-
-	free(packed);
 }
 
 void GreeController::set(const char* options, const char* values, const char* mac) {
@@ -185,10 +186,9 @@ void GreeController::set(const char* options, const char* values, const char* ma
 		packed,
 		device->mac
 	);
+	free(packed);
 
 	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
-
-	free(packed);
 }
 
 char* GreeController::getJsonValue(const char* json, const char* tag) {
