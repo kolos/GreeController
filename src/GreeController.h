@@ -28,11 +28,14 @@ class GreeController
 		void handleStatusPacket(AsyncUDPPacket packet);
 		void handleHandshakePacket(AsyncUDPPacket packet);
 		void packetHandler(AsyncUDPPacket packet);
-		void addDevice(const char* mac, const char* key, IPAddress remoteIP);
-		void sendBindingRequest(IPAddress remoteIP, const char* mac);
+		void addDevice(AsyncUDPPacket packet, const char* key);
+		void sendBindingRequest(AsyncUDPPacket packet);
 		Device* findDeviceByMac(const char* mac);
 		uint8_t numOfDecimals(uint8_t num);
 		char* getJsonValue(const char* json, const char* tag);
+		char* getCidFromPacket(const char* data);
+		char* getJsonValue(AsyncUDPPacket packet, const char* tag);
+		char* getCidFromPacket(AsyncUDPPacket packet);
 	public:
 		void listen();
 		void scan();

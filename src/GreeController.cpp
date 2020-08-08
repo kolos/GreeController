@@ -3,13 +3,12 @@
 using namespace GreeControllerLib;
 
 void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
-	char* data = (char*)packet.data();
-	char* cid = getJsonValue(data, "cid");
+	char* cid = getCidFromPacket(packet);
+
 	Device* device = findDeviceByMac(cid);
 	if(device == nullptr) return;
-	free(cid);
 
-	char* packed = getJsonValue(data, "pack");
+	char* packed = getJsonValue(packet, "pack");
 	char* unpacked = GreePacker::unpack(device->key, packed);
 	free(packed);
 
@@ -21,27 +20,23 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 }
 
 void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
-	char* data = (char*)packet.data();
-	char* packed = getJsonValue(data, "pack");
+	char* packed = getJsonValue(packet, "pack");
 
 	char* unpacked = GreePacker::unpack(base_key, packed);
 	free(packed);
 
-	char* mac = getJsonValue(unpacked, "mac");
 	if(strstr_P(unpacked, PSTR("\"t\":\"dev\""))) {
 		free(unpacked);
-		sendBindingRequest(packet.remoteIP(), mac);
-		free(mac);
+		sendBindingRequest(packet);
 		return;
 	}
 
 	if(strstr_P(unpacked, PSTR("\"t\":\"bindok\""))) {
 		char* key = getJsonValue(unpacked, "key");
-		free(unpacked);
-		addDevice(mac, key, packet.remoteIP());
+		addDevice(packet, key);
 		free(key);
-		free(mac);
 	}
+	free(unpacked);
 }
 
 void GreeController::packetHandler(AsyncUDPPacket packet) {
@@ -58,30 +53,33 @@ void GreeController::packetHandler(AsyncUDPPacket packet) {
 	}
 }
 
-void GreeController::addDevice(const char* mac, const char* key, IPAddress remoteIP) {
-	devices.push_back(new Device(mac, key, remoteIP));
+void GreeController::addDevice(AsyncUDPPacket packet, const char* key) {
+	char* cid = getCidFromPacket(packet);
+
+	devices.push_back(new Device(cid, key, packet.remoteIP()));
 }
 
-void GreeController::sendBindingRequest(IPAddress remoteIP, const char* mac) {
+void GreeController::sendBindingRequest(AsyncUDPPacket packet) {
+	char* cid = getCidFromPacket(packet);
 
-	char binding_json[strlen_P(BINDING_STR) - 2 /* for %s */ + strlen(mac) + 1 /* for 0 terminal */];
+	char binding_json[strlen_P(BINDING_STR) - 5 /* for %.12s */ + 12 /* mac addr */ + 1 /* for 0 terminal */];
 		snprintf_P(
 		binding_json, sizeof(binding_json),
 		BINDING_STR,
-		mac
+		cid
 	);
   
 	char* packed = GreePacker::pack(base_key, binding_json);
 
-	char bind_request[strlen_P(BINDING_REQUEST_STR) - 2 - 2 + strlen(mac) + strlen(packed) + 1];
+	char bind_request[strlen_P(BINDING_REQUEST_STR) - 2 - 5 + 12 /* mac addr */ + strlen(packed) + 1];
 		snprintf_P(bind_request, sizeof(bind_request),
 		BINDING_REQUEST_STR,
 		packed,
-		mac
+		cid
 	);
 	free(packed);
 
-	udp.writeTo((uint8_t*)bind_request, sizeof(bind_request), remoteIP, GREE_PORT);
+	udp.writeTo((uint8_t*)bind_request, sizeof(bind_request), packet.remoteIP(), GREE_PORT);
 }
 
 void GreeController::listen() {
@@ -98,9 +96,9 @@ void GreeController::scan() {
 	udp.broadcastTo(scanning, GREE_PORT);
 }
 
-Device* GreeController::findDeviceByMac(const char* mac) {
+Device* GreeController::findDeviceByMac(const char* cid) {
 	for(Device* device: devices) {
-		if(strncmp(mac, device->mac, strlen(mac)) == 0) {
+		if(strncmp(cid, device->mac, 12 /* mac addr len */) == 0) {
 			return device;
 		}
 	}
@@ -202,6 +200,10 @@ void GreeController::set(const char* options, const char* values, const char* ma
 	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
 }
 
+char* GreeController::getJsonValue(AsyncUDPPacket packet, const char* tag) {
+	return getJsonValue((char*)packet.data(), tag);
+}
+
 char* GreeController::getJsonValue(const char* json, const char* tag) {
 	char* search_tag = (char*)malloc(strlen(tag) + 3 + 1);
 	snprintf(search_tag, strlen(tag) + 3 + 1, "\"%s\":", tag);
@@ -240,4 +242,19 @@ void GreeController::rescan() {
 
 std::vector<Device*> GreeController::getDevices() {
 	return devices;
+}
+
+char* GreeController::getCidFromPacket(const char* data) {
+	char* cid = strstr(data, "cid");
+	if(cid != NULL) {
+		return cid + strlen("cid\":\"");
+	}
+
+	return NULL;
+}
+
+char* GreeController::getCidFromPacket(AsyncUDPPacket packet) {
+	char* data = (char*)packet.data();
+
+	return getCidFromPacket(data);
 }

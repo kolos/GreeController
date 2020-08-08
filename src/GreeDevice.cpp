@@ -3,8 +3,9 @@
 using namespace GreeControllerLib;
 
 Device::Device(const char* _mac, const char* _key, IPAddress _ip): ip(_ip), last_input(NULL), last_query(NULL) {
-	mac = strdup(_mac);
-	key = strdup(_key);
+	strncpy(mac, _mac, 12);
+	strncpy(key, _key, 16);
+	mac[12] = 0; key[16] = 0;
 
 	Serial.print("New device: ");
 	Serial.print("mac=");
@@ -17,6 +18,9 @@ Device::Device(const char* _mac, const char* _key, IPAddress _ip): ip(_ip), last
 }
 
 Device::~Device() {
-	free(mac);
-	free(key);
+	if(last_input != NULL)
+		free(last_input);
+
+	if(last_query != NULL)
+		free(last_query);
 }
