@@ -32,8 +32,6 @@ class GreeController
 		void sendBindingRequest(AsyncUDPPacket packet);
 		Device* findDeviceByMac(const char* mac);
 		uint8_t numOfDecimals(uint8_t num);
-		char* getCidFromPacket(const char* data);
-		char* getCidFromPacket(AsyncUDPPacket packet);
 
 		const char* getJsonValueStart(const char* json, const char* tag);
 		uint16_t getJsonValueLength(const char* json);

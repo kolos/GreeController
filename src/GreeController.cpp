@@ -3,12 +3,13 @@
 using namespace GreeControllerLib;
 
 void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
-	char* cid = getCidFromPacket(packet);
+	const char* data = (char*)packet.data();
 
+	const char* cid = getJsonValueStart(data, "cid");
+	cid += getJsonValueIsString(cid);
 	Device* device = findDeviceByMac(cid);
 	if(device == nullptr) return;
 
-	const char* data = (char*)packet.data();
 	const char* packedJsonValueStart = getJsonValueStart(data, "pack");
 	uint16_t jsonValueLength = getJsonValueLength(packedJsonValueStart);
 	packedJsonValueStart += getJsonValueIsString(packedJsonValueStart);
@@ -60,13 +61,19 @@ void GreeController::packetHandler(AsyncUDPPacket packet) {
 }
 
 void GreeController::addDevice(AsyncUDPPacket packet, const char* key) {
-	char* cid = getCidFromPacket(packet);
+	const char* data = (char*)packet.data();
+
+	const char* cid = getJsonValueStart(data, "cid");
+	cid += getJsonValueIsString(cid);
 
 	devices.push_back(new Device(cid, key, packet.remoteIP()));
 }
 
 void GreeController::sendBindingRequest(AsyncUDPPacket packet) {
-	char* cid = getCidFromPacket(packet);
+	const char* data = (char*)packet.data();
+
+	const char* cid = getJsonValueStart(data, "cid");
+	cid += getJsonValueIsString(cid);
 
 	char binding_json[strlen_P(BINDING_STR) - 5 /* for %.12s */ + 12 /* mac addr */ + 1 /* for 0 terminal */];
 		snprintf_P(
@@ -217,21 +224,6 @@ void GreeController::rescan() {
 
 std::vector<Device*> GreeController::getDevices() {
 	return devices;
-}
-
-char* GreeController::getCidFromPacket(const char* data) {
-	char* cid = strstr(data, "cid");
-	if(cid != NULL) {
-		return cid + strlen("cid\":\"");
-	}
-
-	return NULL;
-}
-
-char* GreeController::getCidFromPacket(AsyncUDPPacket packet) {
-	char* data = (char*)packet.data();
-
-	return getCidFromPacket(data);
 }
 
 const char* GreeController::getJsonValueStart(const char* json, const char* tag) {
