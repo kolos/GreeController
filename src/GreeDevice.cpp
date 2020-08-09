@@ -18,9 +18,9 @@ Device::Device(const char* _mac, const char* _key, IPAddress _ip): ip(_ip), last
 }
 
 Device::~Device() {
-	if(last_input != NULL)
+	if(last_input)
 		free(last_input);
 
-	if(last_query != NULL)
+	if(last_query)
 		free(last_query);
 }

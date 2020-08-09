@@ -8,9 +8,12 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 	Device* device = findDeviceByMac(cid);
 	if(device == nullptr) return;
 
-	char* packed = getJsonValue(packet, "pack");
-	char* unpacked = GreePacker::unpack(device->key, packed);
-	free(packed);
+	const char* data = (char*)packet.data();
+	const char* packedJsonValueStart = getJsonValueStart(data, "pack");
+	uint16_t jsonValueLength = getJsonValueLength(packedJsonValueStart);
+	packedJsonValueStart += getJsonValueIsString(packedJsonValueStart);
+
+	char* unpacked = GreePacker::unpack(device->key, packedJsonValueStart, jsonValueLength);
 
 	if(cb != nullptr) {
 		cb(unpacked);
@@ -20,10 +23,12 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 }
 
 void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
-	char* packed = getJsonValue(packet, "pack");
+	const char* data = (char*)packet.data();
+	const char* packedJsonValueStart = getJsonValueStart(data, "pack");
+	uint16_t jsonValueLength = getJsonValueLength(packedJsonValueStart);
+	packedJsonValueStart += getJsonValueIsString(packedJsonValueStart);
 
-	char* unpacked = GreePacker::unpack(base_key, packed);
-	free(packed);
+	char* unpacked = GreePacker::unpack(base_key, packedJsonValueStart, jsonValueLength);
 
 	if(strstr_P(unpacked, PSTR("\"t\":\"dev\""))) {
 		free(unpacked);
@@ -32,9 +37,10 @@ void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
 	}
 
 	if(strstr_P(unpacked, PSTR("\"t\":\"bindok\""))) {
-		char* key = getJsonValue(unpacked, "key");
-		addDevice(packet, key);
-		free(key);
+		const char* keyStart = getJsonValueStart(unpacked, "key");
+		keyStart += getJsonValueIsString(keyStart);
+
+		addDevice(packet, keyStart);
 	}
 	free(unpacked);
 }
@@ -68,7 +74,7 @@ void GreeController::sendBindingRequest(AsyncUDPPacket packet) {
 		BINDING_STR,
 		cid
 	);
-  
+
 	char* packed = GreePacker::pack(base_key, binding_json);
 
 	char bind_request[strlen_P(BINDING_REQUEST_STR) - 2 - 5 + 12 /* mac addr */ + strlen(packed) + 1];
@@ -200,37 +206,6 @@ void GreeController::set(const char* options, const char* values, const char* ma
 	udp.writeTo((uint8_t*)status_request, sizeof(status_request), device->ip, GREE_PORT);
 }
 
-char* GreeController::getJsonValue(AsyncUDPPacket packet, const char* tag) {
-	return getJsonValue((char*)packet.data(), tag);
-}
-
-char* GreeController::getJsonValue(const char* json, const char* tag) {
-	char* search_tag = (char*)malloc(strlen(tag) + 3 + 1);
-	snprintf(search_tag, strlen(tag) + 3 + 1, "\"%s\":", tag);
-
-	char* search_idx = strstr(json, search_tag);
-	free(search_tag);
-
-	if(search_idx == nullptr) return nullptr;
-	bool is_string = (*search_idx == '"') ? 1 : 0;
-	search_idx += strlen(tag) + 3 + is_string * 1;
-	uint16_t val_len = 0;
-	for(;*search_idx!='\0';val_len++) {
-		char c = *(search_idx+val_len);
-		if(is_string) {
-			if(c == '"' && *(search_idx+val_len-1) != '\\') break;
-		} else {
-			if(c == ',' || c == '}') break;
-		}
-	}
-
-	char* tmp = (char*)malloc(val_len+1);
-	strncpy(tmp, search_idx, val_len);
-	tmp[val_len] = '\0';
-
-	return tmp;
-}
-
 void GreeController::setStatusHandler(GreeMsgHandlerFunction callback) {
 	cb = callback;
 }
@@ -257,4 +232,55 @@ char* GreeController::getCidFromPacket(AsyncUDPPacket packet) {
 	char* data = (char*)packet.data();
 
 	return getCidFromPacket(data);
+}
+
+const char* GreeController::getJsonValueStart(const char* json, const char* tag) {
+	const char *search_idx = json;
+	while((search_idx = strstr(search_idx, tag))) {
+
+		if(*(search_idx - 1) == '"' && *(search_idx + strlen(tag)) == '"' && *(search_idx + strlen(tag) + 1) == ':') {
+			search_idx += strlen(tag)+2;
+
+			while(*(search_idx) == ' ' || *(search_idx) == '\t' || *(search_idx) == '\n') {
+				search_idx++;
+			}
+
+			char first_char = *(search_idx);
+			if(first_char == '"' || first_char == '0' || first_char == '1' || first_char == '2' || first_char == '3' || first_char == '4' || first_char == '5' || first_char == '6' || first_char == '7' || first_char == '8' || first_char == '9') break;
+
+			if(strstr(search_idx, "null") == search_idx || strstr(search_idx, "NULL") == search_idx) break;
+
+			return NULL;
+		}
+
+		search_idx+=strlen(tag)+2;
+	};
+
+	return search_idx;
+}
+
+uint16_t GreeController::getJsonValueLength(const char* json) {
+	if(json == NULL) return 0;
+	if(strstr(json, "null") == json || strstr(json, "NULL") == json) return 4;
+	char first_char = *(json);
+
+	if(first_char == '"') json++;
+	uint16_t val_len = 0;
+	for(;*json!='\0';val_len++) {
+		char c = *(json+val_len);
+		if(first_char == '"') {
+			if(c == '"' && *(json+val_len-1) != '\\') break;
+		} else {
+			if(c == ',' || c == '}') break;
+		}
+	}
+
+	return val_len;
+}
+
+bool GreeController::getJsonValueIsString(const char* json) {
+	if(json == NULL) return 0;
+	char first_char = *(json);
+
+	return (first_char == '"');
 }

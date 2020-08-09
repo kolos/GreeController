@@ -41,9 +41,9 @@ char* GreePacker::pack(const char* key, const char* data) {
 	return packed;
 }
 
-char* GreePacker::unpack(const char* key, const char* data) {
+char* GreePacker::unpack(const char* key, const char* data, uint16_t len) {
 	char* buf = b64_decode(data);
-	size_t size = base64_decode_expected_len(strlen(data));
+	size_t size = base64_decode_expected_len(len);
 	size -= size % 16;
 
 	struct AES_ctx ctx;

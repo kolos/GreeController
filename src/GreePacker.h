@@ -18,7 +18,7 @@ class GreePacker
 		static char* b64_decode(const char* data);
 	public:
 		static char* pack(const char* key, const char* data);
-		static char* unpack(const char* key, const char* data);
+		static char* unpack(const char* key, const char* data, uint16_t len);
 };
 
 } // namespace GreeControllerLib
