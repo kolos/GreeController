@@ -14,13 +14,18 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 	uint16_t jsonValueLength = getJsonValueLength(packedJsonValueStart);
 	packedJsonValueStart += getJsonValueIsString(packedJsonValueStart);
 
-	char* unpacked = GreePacker::unpack(device->key, packedJsonValueStart, jsonValueLength);
+	if(device->last_packed_status == NULL || strncmp(packedJsonValueStart, device->last_packed_status, jsonValueLength) != 0) {
+		if(device->last_packed_status) {
+			free(device->last_packed_status);
+		}
 
-	if(cb != nullptr) {
-		cb(unpacked);
+		device->last_packed_status = strndup(packedJsonValueStart, jsonValueLength);
+		device->last_status = GreePacker::unpack(device->key, packedJsonValueStart, jsonValueLength);
 	}
 
-	free(unpacked);
+	if(cb != nullptr) {
+		cb(device->last_status);
+	}
 }
 
 void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {

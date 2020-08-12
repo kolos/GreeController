@@ -2,7 +2,7 @@
 
 using namespace GreeControllerLib;
 
-Device::Device(const char* _mac, const char* _key, IPAddress _ip): ip(_ip), last_input(NULL), last_query(NULL) {
+Device::Device(const char* _mac, const char* _key, IPAddress _ip): ip(_ip), last_input(NULL), last_query(NULL), last_status(NULL), last_packed_status(NULL) {
 	strncpy(mac, _mac, 12);
 	strncpy(key, _key, 16);
 	mac[12] = 0; key[16] = 0;
@@ -23,4 +23,10 @@ Device::~Device() {
 
 	if(last_query)
 		free(last_query);
+
+	if(last_status)
+		free(last_status);
+
+	if(last_packed_status)
+		free(last_packed_status);
 }
