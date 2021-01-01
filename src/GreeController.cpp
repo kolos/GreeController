@@ -52,8 +52,6 @@ void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
 }
 
 void GreeController::packetHandler(AsyncUDPPacket packet) {
-	if(packet.remotePort() != GREE_PORT) return;
-
 	const char* data = (char*)packet.data();
 
 	if(strstr_P(data, PSTR("\"t\":\"pack\""))) { // has packed data
@@ -101,11 +99,11 @@ void GreeController::sendBindingRequest(AsyncUDPPacket packet) {
 }
 
 void GreeController::listen() {
-	if(udp.listen(0)) {
-		udp.onPacket([this](AsyncUDPPacket packet){
-			packetHandler(packet);
-		});
-	}
+	if(!udp.listen(GREE_PORT)) return;
+
+	udp.onPacket([this](AsyncUDPPacket packet){
+		packetHandler(packet);
+	});
 }
 
 void GreeController::scan() {
