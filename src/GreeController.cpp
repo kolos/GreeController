@@ -15,9 +15,8 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 	packedJsonValueStart += getJsonValueIsString(packedJsonValueStart);
 
 	if(device->last_packed_status == NULL || strncmp(packedJsonValueStart, device->last_packed_status, jsonValueLength) != 0) {
-		if(device->last_packed_status) {
-			free(device->last_packed_status);
-		}
+		free(device->last_packed_status);
+		free(device->last_status);
 
 		device->last_packed_status = strndup(packedJsonValueStart, jsonValueLength);
 		device->last_status = GreePacker::unpack(device->key, packedJsonValueStart, jsonValueLength);
@@ -127,9 +126,8 @@ void GreeController::get(const char* input, const char* mac) {
 	if(device == nullptr) return;
 	
 	if(device->last_input == NULL || strcmp(input, device->last_input) != 0) {
-		if(device->last_input) {
-			free(device->last_input);
-		}
+		free(device->last_input);
+
 		device->last_input = strdup(input);
 		char status_json[strlen_P(ONE_STATUS_STR) - 2 -2 + strlen(input) + strlen(device->mac) + 1];
 		snprintf_P(
@@ -141,18 +139,16 @@ void GreeController::get(const char* input, const char* mac) {
 
 		char* packed = GreePacker::pack(device->key, status_json);
 
-		if(device->last_query) {
-			free(device->last_query);
-		}
+		free(device->last_query);
 
-		char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + strlen(device->mac) + strlen(packed) + 1];
-		snprintf_P(status_request, sizeof(status_request),
+		size_t sizeof_status_request = strlen_P(STATUS_REQUEST_STR) - 2 + strlen(device->mac) + strlen(packed) + 1;
+		device->last_query = (char*)malloc(sizeof_status_request);
+		snprintf_P(device->last_query, sizeof_status_request,
 			STATUS_REQUEST_STR,
 			packed,
 			device->mac
 		);
 		free(packed);
-		device->last_query = strdup(status_request);
 	}
 	
 	udp.writeTo((uint8_t*)device->last_query, strlen(device->last_query), device->ip, GREE_PORT);
@@ -221,6 +217,9 @@ void GreeController::setStatusHandler(GreeMsgHandlerFunction callback) {
 }
 
 void GreeController::rescan() {
+	for(uint8_t i = 0; i<devices.size(); i++) {
+		delete devices[i];
+	}
 	devices.clear();
 	scan();
 }

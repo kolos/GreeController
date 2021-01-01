@@ -9,8 +9,8 @@ namespace GreeControllerLib {
 class Device 
 {
 	public:
-		char mac[13]; // 12 + 1
-		char key[17]; // 16 + 1
+		char* mac;
+		char* key;
 		char* last_input;
 		char* last_query;
 		char* last_packed_status;
