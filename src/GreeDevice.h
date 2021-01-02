@@ -11,10 +11,6 @@ class Device
 	public:
 		char* mac;
 		char* key;
-		char* last_input;
-		char* last_query;
-		char* last_packed_status;
-		char* last_status;
 		IPAddress ip;
 
 		Device(const char* mac, const char* key, IPAddress ip);
