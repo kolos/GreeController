@@ -14,7 +14,7 @@ namespace GreeControllerLib {
 class GreePacker
 {
 	private:
-		static char* b64_encode(const char* data, size_t length);
+		static char* b64_encode(char* buffer, uint16_t length, uint16_t offset);
 		static char* b64_decode(const char* data);
 	public:
 		static char* pack(const char* key, const char* data);
