@@ -25,11 +25,11 @@ class GreeController
 		std::vector<Device*> devices;
 		GreeMsgHandlerFunction cb = nullptr;
 		const char* base_key = BASE_KEY;
-		void handleStatusPacket(AsyncUDPPacket packet);
-		void handleHandshakePacket(AsyncUDPPacket packet);
-		void packetHandler(AsyncUDPPacket packet);
-		void addDevice(AsyncUDPPacket packet, const char* key);
-		void sendBindingRequest(AsyncUDPPacket packet);
+		void handleStatusPacket(AsyncUDPPacket* packet);
+		void handleHandshakePacket(AsyncUDPPacket* packet);
+		void packetHandler(AsyncUDPPacket* packet);
+		void addDevice(AsyncUDPPacket* packet, const char* key);
+		void sendBindingRequest(AsyncUDPPacket* packet);
 		Device* findDeviceByMac(const char* mac);
 		uint8_t numOfDecimals(uint8_t num);
 

@@ -2,8 +2,8 @@
 
 using namespace GreeControllerLib;
 
-void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
-	const char* data = (char*)packet.data();
+void GreeController::handleStatusPacket(AsyncUDPPacket* packet) {
+	const char* data = (char*)packet->data();
 
 	const char* cid = getJsonValueStart(data, "cid");
 	cid += getJsonValueIsString(cid);
@@ -23,8 +23,8 @@ void GreeController::handleStatusPacket(AsyncUDPPacket packet) {
 	free(status);
 }
 
-void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
-	const char* data = (char*)packet.data();
+void GreeController::handleHandshakePacket(AsyncUDPPacket* packet) {
+	const char* data = (char*)packet->data();
 	const char* packedJsonValueStart = getJsonValueStart(data, "pack");
 	uint16_t jsonValueLength = getJsonValueLength(packedJsonValueStart);
 	packedJsonValueStart += getJsonValueIsString(packedJsonValueStart);
@@ -46,8 +46,8 @@ void GreeController::handleHandshakePacket(AsyncUDPPacket packet) {
 	free(unpacked);
 }
 
-void GreeController::packetHandler(AsyncUDPPacket packet) {
-	const char* data = (char*)packet.data();
+void GreeController::packetHandler(AsyncUDPPacket* packet) {
+	const char* data = (char*)packet->data();
 
 	if(strstr_P(data, PSTR("\"t\":\"pack\""))) { // has packed data
 		if(strstr_P(data, PSTR("\"i\":1"))) { // initial packet
@@ -58,17 +58,17 @@ void GreeController::packetHandler(AsyncUDPPacket packet) {
 	}
 }
 
-void GreeController::addDevice(AsyncUDPPacket packet, const char* key) {
-	const char* data = (char*)packet.data();
+void GreeController::addDevice(AsyncUDPPacket* packet, const char* key) {
+	const char* data = (char*)packet->data();
 
 	const char* cid = getJsonValueStart(data, "cid");
 	cid += getJsonValueIsString(cid);
 
-	devices.push_back(new Device(cid, key, packet.remoteIP()));
+	devices.push_back(new Device(cid, key, packet->remoteIP()));
 }
 
-void GreeController::sendBindingRequest(AsyncUDPPacket packet) {
-	const char* data = (char*)packet.data();
+void GreeController::sendBindingRequest(AsyncUDPPacket* packet) {
+	const char* data = (char*)packet->data();
 
 	const char* cid = getJsonValueStart(data, "cid");
 	cid += getJsonValueIsString(cid);
@@ -89,14 +89,14 @@ void GreeController::sendBindingRequest(AsyncUDPPacket packet) {
 	);
 	free(packed);
 
-	udp.writeTo((uint8_t*)bind_request, sizeof(bind_request), packet.remoteIP(), GREE_PORT);
+	udp.writeTo((uint8_t*)bind_request, sizeof(bind_request), packet->remoteIP(), GREE_PORT);
 }
 
 void GreeController::listen() {
 	if(!udp.listen(GREE_PORT)) return;
 
-	udp.onPacket([this](AsyncUDPPacket packet){
-		packetHandler(packet);
+	udp.onPacket([&](AsyncUDPPacket packet){
+		packetHandler(&packet);
 	});
 }
 
