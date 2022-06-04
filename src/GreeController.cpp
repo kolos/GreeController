@@ -214,10 +214,11 @@ std::vector<Device*> GreeController::getDevices() {
 
 const char* GreeController::getJsonValueStart(const char* json, const char* tag) {
 	const char *search_idx = json;
+	uint8_t tag_len = strlen(tag);
 	while((search_idx = strstr(search_idx, tag))) {
 
-		if(*(search_idx - 1) == '"' && *(search_idx + strlen(tag)) == '"' && *(search_idx + strlen(tag) + 1) == ':') {
-			search_idx += strlen(tag)+2;
+		if(*(search_idx - 1) == '"' && *(search_idx + tag_len) == '"' && *(search_idx + tag_len + 1) == ':') {
+			search_idx += tag_len+2;
 
 			while(*(search_idx) == ' ' || *(search_idx) == '\t' || *(search_idx) == '\n') {
 				search_idx++;
@@ -231,7 +232,7 @@ const char* GreeController::getJsonValueStart(const char* json, const char* tag)
 			return NULL;
 		}
 
-		search_idx+=strlen(tag)+2;
+		search_idx+=tag_len+2;
 	};
 
 	return search_idx;

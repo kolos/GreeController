@@ -1,6 +1,6 @@
 {
   "name": "GreeController",
-  "version": "0.2",
+  "version": "0.3",
   "keywords": "gree, aircooler",
   "description": "Controll your aircooler from ESP8266",
   "repository":
