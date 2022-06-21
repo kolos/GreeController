@@ -227,7 +227,7 @@ const char* GreeController::getJsonValueStart(const char* json, const char* tag)
 			char first_char = *(search_idx);
 			if(first_char == '"' || first_char == '0' || first_char == '1' || first_char == '2' || first_char == '3' || first_char == '4' || first_char == '5' || first_char == '6' || first_char == '7' || first_char == '8' || first_char == '9') break;
 
-			if(strstr(search_idx, "null") == search_idx || strstr(search_idx, "NULL") == search_idx) break;
+			if(strcasestr(search_idx, "null") == search_idx) break;
 
 			return NULL;
 		}
@@ -240,12 +240,12 @@ const char* GreeController::getJsonValueStart(const char* json, const char* tag)
 
 uint16_t GreeController::getJsonValueLength(const char* json) {
 	if(json == NULL) return 0;
-	if(strstr(json, "null") == json || strstr(json, "NULL") == json) return 4;
+	if(strcasestr(json, "null") == json) return 4;
 	char first_char = *(json);
 
 	if(first_char == '"') json++;
 	uint16_t val_len = 0;
-	for(;*json!='\0';val_len++) {
+	for(;*(json+val_len) != 0;val_len++) {
 		char c = *(json+val_len);
 		if(first_char == '"') {
 			if(c == '"' && *(json+val_len-1) != '\\') break;
