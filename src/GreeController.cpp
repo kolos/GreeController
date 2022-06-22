@@ -81,9 +81,10 @@ void GreeController::sendBindingRequest(AsyncUDPPacket* packet) {
 
 	char* packed = GreePacker::pack(base_key, binding_json);
 
-	char bind_request[strlen_P(BINDING_REQUEST_STR) - 2 - 5 + 12 /* mac addr */ + strlen(packed) + 1];
+	char bind_request[strlen_P(REQUEST_STR) -2 +1 /* i */ -5 +12 /* mac addr */ -2 +strlen(packed) + 1];
 	snprintf_P(bind_request, sizeof(bind_request),
-		BINDING_REQUEST_STR,
+		REQUEST_STR,
+		REQUEST_BIND,
 		packed,
 		cid
 	);
@@ -129,9 +130,10 @@ void GreeController::get(const char* input, const char* mac) {
 
 	char* packed = GreePacker::pack(device->key, status_json);
 
-	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + 12 /* mac addr */ + strlen(packed) + 1];
+	char status_request[strlen_P(REQUEST_STR) -2 +1 /* i */ -5 +12 /* mac addr */ -2 +strlen(packed) + 1];
 	snprintf_P(status_request, sizeof(status_request),
-		STATUS_REQUEST_STR,
+		REQUEST_STR,
+		REQUEST_STATUS,
 		packed,
 		device->mac
 	);
@@ -160,9 +162,10 @@ void GreeController::set(const char* option, uint8_t value, const char* mac) {
 
 	char* packed = GreePacker::pack(device->key, status_json);
 
-	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + 12 /* mac addr */ + strlen(packed) + 1];
+	char status_request[strlen_P(REQUEST_STR) -2 +1 /* i */ -5 +12 /* mac addr */ -2 +strlen(packed) + 1];
 	snprintf_P(status_request, sizeof(status_request),
-		STATUS_REQUEST_STR,
+		REQUEST_STR,
+		REQUEST_STATUS,
 		packed,
 		device->mac
 	);
@@ -185,9 +188,10 @@ void GreeController::set(const char* options, const char* values, const char* ma
 
 	char* packed = GreePacker::pack(device->key, status_json);
 
-	char status_request[strlen_P(STATUS_REQUEST_STR) - 2 + 12 /* mac addr */ + strlen(packed) + 1];
+	char status_request[strlen_P(REQUEST_STR) -2 +1 /* i */ -5 +12 /* mac addr */ -2 +strlen(packed) + 1];
 	snprintf_P(status_request, sizeof(status_request),
-		STATUS_REQUEST_STR,
+		REQUEST_STR,
+		REQUEST_STATUS,
 		packed,
 		device->mac
 	);

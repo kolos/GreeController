@@ -13,6 +13,8 @@
 
 #define GREE_PORT 7000
 #define BASE_KEY "a3K8Bx%2r8Y7#xDh"
+#define REQUEST_BIND '1'
+#define REQUEST_STATUS '0'
 
 namespace GreeControllerLib {
 
