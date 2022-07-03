@@ -96,7 +96,7 @@ void GreeController::sendBindingRequest(AsyncUDPPacket* packet) {
 void GreeController::listen() {
 	if(!udp.listen(GREE_PORT)) return;
 
-	udp.onPacket([&](AsyncUDPPacket packet){
+	udp.onPacket([&](AsyncUDPPacket& packet){
 		packetHandler(&packet);
 	});
 }
