@@ -6,7 +6,13 @@ char* GreePacker::b64_encode(char* buffer, uint16_t length, uint16_t offset) {
 	char* data = buffer + offset;
 
 	base64_encodestate _state;
+	#ifdef ESP8266
 	base64_init_encodestate_nonewlines(&_state);
+	#elif LIBRETINY
+	base64_init_encodestate(&_state);
+	#else
+		#error "Unsupported platform"
+	#endif
 	uint16_t len = base64_encode_block(data, length, buffer, &_state);
 	base64_encode_blockend((buffer + len), &_state);
 
@@ -26,7 +32,13 @@ char* GreePacker::pack(const char* key, const char* data) {
 	char pkcs7_padding_length = 16 - (size % 16);
 	size += pkcs7_padding_length;
 
+	#ifdef ESP8266
 	uint16_t b64_size = base64_encode_expected_len_nonewlines(size) + 1;
+	#elif LIBRETINY
+	uint16_t b64_size = base64_encode_expected_len(size) + 1;
+	#else
+		#error "Unsupported platform"
+	#endif
 
 	char* buf = (char*)malloc(b64_size);
 	memset(buf + b64_size - size + strlen(data), pkcs7_padding_length, pkcs7_padding_length);

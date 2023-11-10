@@ -1,6 +1,6 @@
 {
   "name": "GreeController",
-  "version": "0.3",
+  "version": "0.4",
   "keywords": "gree, aircooler",
   "description": "Controll your aircooler from ESP8266",
   "repository":
@@ -14,5 +14,15 @@
     }
   ],
   "frameworks": "arduino",
-  "platforms": "espressif8266"
+  "platforms": ["espressif8266", "libretiny"],
+  "dependencies": [
+    {
+      "name": "me-no-dev/ESPAsyncUDP",
+      "platforms": ["espressif8266"]
+    },
+    {
+      "name": "kolos/tiny-AES-c",
+      "platforms": ["espressif8266", "libretiny"]
+    }
+  ]
 }

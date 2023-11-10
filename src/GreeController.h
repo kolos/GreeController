@@ -2,7 +2,11 @@
 #define GREECONTROLLER_H
 
 #include <Arduino.h>
+#ifdef ESP8266
 #include <ESPAsyncUDP.h>
+#elif LIBRETINY
+#include <AsyncUDP.h>
+#endif
 #include <vector>
 #include <pgmspace.h>
 

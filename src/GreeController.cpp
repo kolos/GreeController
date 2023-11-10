@@ -103,7 +103,7 @@ void GreeController::listen() {
 
 void GreeController::scan() {
 	char scanning[13];
-	sprintf_P(scanning, SCANNING_STR);
+	strcpy_P(scanning, SCANNING_STR);
 	udp.broadcastTo(scanning, GREE_PORT);
 }
 
@@ -231,7 +231,7 @@ const char* GreeController::getJsonValueStart(const char* json, const char* tag)
 			char first_char = *(search_idx);
 			if(first_char == '"' || first_char == '0' || first_char == '1' || first_char == '2' || first_char == '3' || first_char == '4' || first_char == '5' || first_char == '6' || first_char == '7' || first_char == '8' || first_char == '9') break;
 
-			if(strcasestr(search_idx, "null") == search_idx) break;
+			if(strstr(search_idx, "null") == search_idx) break;
 
 			return NULL;
 		}
@@ -244,7 +244,7 @@ const char* GreeController::getJsonValueStart(const char* json, const char* tag)
 
 uint16_t GreeController::getJsonValueLength(const char* json) {
 	if(json == NULL) return 0;
-	if(strcasestr(json, "null") == json) return 4;
+	if(strstr(json, "null") == json) return 4;
 	char first_char = *(json);
 
 	if(first_char == '"') json++;

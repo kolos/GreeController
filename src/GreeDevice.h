@@ -2,7 +2,6 @@
 #define GREEDEVICE_H
 
 #include <Arduino.h>
-#include <ESPAsyncUDP.h>
 
 namespace GreeControllerLib {
 
